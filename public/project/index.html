@@ -1,0 +1,76 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <style>
+    * {
+      border: 0px;
+      margin: 0px;
+      box-sizing: border-box;
+      border-width: 0px;
+    }
+      canvas{
+        background: #000;
+        vertical-align:top
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c" ></canvas>
+
+    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script>
+      var canvas;
+      var ctx;
+      var color = 'white';
+      canvas = document.getElementById('c');
+      ctx = canvas.getContext('2d');
+
+      var draw = function(event) {
+        var offset = $(canvas).offset();
+        var start = function(e) {
+            ctx.beginPath();
+            ctx.moveTo(e.x, e.y);
+        };
+        var move = function(e) {
+            ctx.lineTo(e.x, e.y);
+            ctx.lineWidth = 20;
+            ctx.strokeStyle = color;
+            ctx.stroke();
+        };
+        if (event.type == 'start')
+          start(event);
+        if (event.type == 'move')
+          move(event);
+        if (event.type == 'clear')
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        if (event.type == 'color')
+          color = event.color;
+      };
+
+      var socket = io();
+      socket.on('draw', function(data){
+        draw(data);
+      });
+
+      function resize()
+      {
+        console.log('sdf');
+        var h = $(window).height(),
+            w = $(window).width();
+        canvas.height = h;
+        canvas.width = w;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        socket.emit('resize', {
+          type: 'resize', 
+          height: h,
+          width: w
+        });
+      }
+      window.onresize = resize;
+      resize();
+      
+    </script>
+  </body>
+</html>
